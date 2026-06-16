@@ -1,9 +1,36 @@
-cat > .gitignore << 'EOF'
-venv/
-data/
+# ── Credenciales — NUNCA a git ────────────────────────────────
 .env
-*.json
+secrets/
+*.json.key
+*service-account*.json
+*credentials*.json
+
+# ── Datos generados — demasiado pesados para git ───────────────
+data/
+
+# ── Python ────────────────────────────────────────────────────
 __pycache__/
-*.pyc
-.pytest_cache/
-EOF
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Entornos virtuales ─────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── IDEs ──────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# ── Logs y temporales ─────────────────────────────────────────
+*.log
+*.tmp
+.cache/
