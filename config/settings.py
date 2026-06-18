@@ -53,110 +53,39 @@ PATHS = {
 # Sin autenticación requerida
 # ─────────────────────────────────────────────
 
+# Tiendas VTEX colombianas confirmadas. Única fuente de verdad para
+# generators/discover_categories.py y generators/extract_products.py —
+# agregar/quitar una tienda es editar solo esta lista.
+VTEX_STORES: list[str] = [
+    "https://store.sony.com.co",
+    "https://www.electrolux.com.co",
+    "https://www.whirlpool.com.co",
+    "https://www.jumbocolombia.com",
+    "https://www.arturocalle.com",
+    "https://www.studiof.com.co",
+    "https://co.totto.com",
+    "https://www.mariohernandez.com.co",
+    "https://www.nike.com.co",
+    "https://www.asics.com.co",
+    "https://www.olimpica.com",
+    "https://www.pepeganga.com",
+]
+
+# Cuántos hijos directos de cada categoría raíz se toman como keyword
+# (discover_categories.py) — muestra reducida para mantener el volumen
+# de la prueba manejable.
+VTEX_CHILDREN_PER_ROOT = 5
+
+# Paths de la etapa de extracción de catálogo (scripts 1-3)
+CATEGORY_TREES_DIR  = DATA_DIR / "category_trees"
+CATEGORY_KEYWORDS_PATH = CATEGORY_TREES_DIR / "category_keywords.json"
+RAW_EXTRACTION_DIR  = DATA_DIR / "raw_extraction"
+
 # Página de resultados — VTEX permite hasta 50 por request
 VTEX_PAGE_SIZE = 49  # _from=0&_to=49 = 50 items
 
 # Rate limiting conservador
 VTEX_REQUESTS_PER_SECOND = 2.0
-
-# ─────────────────────────────────────────────
-# CATEGORÍAS Y TIENDAS — CONFIGURABLE
-# Estructura:
-#   categoria_name:
-#     target: productos objetivo
-#     sources: lista de tiendas con sus keywords de búsqueda
-#
-# Para agregar/quitar una categoría o tienda: editar solo este dict.
-# ─────────────────────────────────────────────
-# ─────────────────────────────────────────────────────────────────
-# VTEX CATEGORIES — Multi-tienda colombiana con category IDs reales
-#
-# Cada categoría tiene múltiples fuentes con sus cat_ids reales
-# obtenidos de /api/catalog_system/pub/category/tree/2
-#
-# Estrategia: fq=C:{id} trae TODO el catálogo de esa categoría
-# Cambiar fuentes: editar solo este dict
-# ─────────────────────────────────────────────────────────────────
-VTEX_CATEGORIES: dict[str, dict] = {
-
-    "Electrónica y Tecnología": {
-        "target": 1200,
-        "sources": [
-            # Jumbo — Tecnología + TV y Audio + Celulares
-            {"store": "https://www.jumbocolombia.com", "category_ids": [47, 2000666, 2000841]},
-            # Sony Colombia — Cámaras(1) + Celulares(4) + TV(8) + Gaming(14)
-            {"store": "https://store.sony.com.co",     "category_ids": [1, 4, 8, 14]},
-            # Electrolux — Limpieza(1) + Lavado(2) + Refrigeración + Cocina
-            {"store": "https://www.electrolux.com.co", "category_ids": [1, 2]},
-            # Whirlpool — Lavadoras(1) + Neveras(9) + Cocina
-            {"store": "https://www.whirlpool.com.co",  "category_ids": [1, 9]},
-        ],
-    },
-
-    "Ropa y Moda": {
-        "target": 1200,
-        "sources": [
-            # Arturo Calle — Hombre(205) + Mujer si existe
-            {"store": "https://www.arturocalle.com",       "category_ids": [205]},
-            # Studio F — Ropa(1) completo
-            {"store": "https://www.studiof.com.co",        "category_ids": [1]},
-            # Totto — Hombre(1) + Mujer(2) + Niños
-            {"store": "https://co.totto.com",              "category_ids": [1, 2]},
-            # Mario Hernandez — Hombre(1) + Mujer(2)
-            {"store": "https://www.mariohernandez.com.co", "category_ids": [1, 2]},
-            # Jumbo — Ropa y Accesorios completo
-            {"store": "https://www.jumbocolombia.com",     "category_ids": [2000350]},
-        ],
-    },
-
-    "Hogar y Muebles": {
-        "target": 1000,
-        "sources": [
-            # Jumbo — Hogar y Decoración completo
-            {"store": "https://www.jumbocolombia.com",     "category_ids": [1000030]},
-            # Electrolux — línea hogar
-            {"store": "https://www.electrolux.com.co",     "category_ids": [1, 2]},
-            # Whirlpool — electrodomésticos hogar
-            {"store": "https://www.whirlpool.com.co",      "category_ids": [1, 9]},
-        ],
-    },
-
-    "Deportes y Fitness": {
-        "target": 1000,
-        "sources": [
-            # Nike Colombia — Hombre(1) + Mujer(18)
-            {"store": "https://www.nike.com.co",   "category_ids": [1, 18]},
-            # Asics — Unisex(68) + Kids(3)
-            {"store": "https://www.asics.com.co",  "category_ids": [68, 3, 75]},
-            # Jumbo — Deportes y Tiempo Libre completo
-            {"store": "https://www.jumbocolombia.com", "category_ids": [116]},
-            # Olímpica — Deportes
-            {"store": "https://www.olimpica.com",  "category_ids": [13000000]},
-        ],
-    },
-
-    "Belleza y Cuidado": {
-        "target": 800,
-        "sources": [
-            # Jumbo — Cuidado Personal(2000014) + Belleza(2000020)
-            {"store": "https://www.jumbocolombia.com", "category_ids": [2000014, 2000020]},
-            # Olímpica — Belleza y Cuidado
-            {"store": "https://www.olimpica.com",      "category_ids": [6000000]},
-        ],
-    },
-
-    "Juegos y Juguetes": {
-        "target": 800,
-        "sources": [
-            # Pepe Ganga — Juguetería(1) completa — especialista #1 Colombia
-            {"store": "https://www.pepeganga.com",     "category_ids": [1]},
-            # Jumbo — Juguetería completa
-            {"store": "https://www.jumbocolombia.com", "category_ids": [1000037]},
-            # Olímpica — Juguetería(11000000)
-            {"store": "https://www.olimpica.com",      "category_ids": [11000000]},
-        ],
-    },
-}
 
 # ─────────────────────────────────────────────
 # SIMULACIÓN — parámetros del pipeline sintético
