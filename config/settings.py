@@ -35,14 +35,18 @@ RAW_SEMI       = DATA_DIR / "raw" / "semi-structured"
 # Estructura del data lake:
 #   products/products.parquet                         <- sin particiones
 #   users/year=*/month=*/users.parquet                <- particionado
+#   sessions/sessions.parquet                          <- sin particiones (por ahora)
 #   transactions/year=*/month=*/day=*/...parquet      <- particionado
 #   events/year=*/month=*/day=*/hour=*/events.json    <- particionado
 #   datalayer/year=*/month=*/day=*/session_*.json     <- particionado
 PATHS = {
     "products":     RAW_STRUCTURED / "products" / "products.parquet",
     "users":        RAW_STRUCTURED / "users",
+    "sessions":     RAW_STRUCTURED / "sessions",
     "transactions": RAW_STRUCTURED / "transactions",
     "events":       RAW_SEMI / "events",
+    "invoices":     RAW_SEMI / "invoices",
+    "fraud_scores": RAW_STRUCTURED / "fraud_scores",
     "datalayer":    RAW_SEMI / "datalayer",
     "processed":    DATA_DIR / "processed",
 }
@@ -90,17 +94,33 @@ VTEX_REQUESTS_PER_SECOND = 2.0
 # ─────────────────────────────────────────────
 # SIMULACIÓN — parámetros del pipeline sintético
 # ─────────────────────────────────────────────
-SIM_NUM_USERS = 50_000
+SIM_NUM_USERS = 1_000
 SIM_DATE_START = "2024-01-01"
-SIM_DATE_END   = "2024-12-31"
+SIM_DATE_END   = "2026-05-31"
 
-# Funnel de conversión — debe sumar 1.0
+USER_SEGMENTS: list[dict] = [
+    {"segment": "estandar",  "weight": 0.70},
+    {"segment": "frecuente", "weight": 0.25},
+    {"segment": "VIP",       "weight": 0.05},
+]
+
+# Funnel de conversión — aplica SOLO sobre sesiones que llegan a
+# add_payment_info (el universo de "abandonado antes de pagar" ya está
+# cubierto por SESSION_PROFILE_WEIGHTS). Debe sumar 1.0.
+# Basado en renormalizar el funnel original quitando 'abandoned'.
 TRANSACTION_STATUS_RATES: dict[str, float] = {
-    "completed":       0.35,
-    "abandoned":       0.45,
-    "fraud":           0.08,
-    "technical_error": 0.05,
-    "pending":         0.07,
+    "completed":       0.64,
+    "fraud":           0.15,
+    "technical_error": 0.09,
+    "pending":         0.13,
+}
+
+# Mapeo de status de transacción → estado_pago del evento purchase
+TRANSACTION_STATUS_TO_ESTADO_PAGO: dict[str, str] = {
+    "completed":       "APPROVED",
+    "fraud":           "REJECTED",
+    "technical_error": "ERROR",
+    "pending":         "PENDING",
 }
 
 # Distribución geográfica colombiana (ciudades principales)
@@ -124,6 +144,64 @@ INCOME_SEGMENTS: list[dict] = [
     {"segment": "medio_alto",  "strata": [4, 5], "weight": 0.18, "avg_order_cop": 500_000},
     {"segment": "alto",        "strata": [6],    "weight": 0.07, "avg_order_cop": 1_500_000},
 ]
+
+# ─────────────────────────────────────────────
+# SESIONES — perfiles de comportamiento (basado en benchmarks reales:
+# Baymard Institute ~70% cart abandonment, conversión ecommerce ~2-3%)
+# Aplica sobre las sesiones CON usuario destino (no las anónimas puras,
+# que son 100% Vitrinero forzado). Debe sumar 1.0.
+# ─────────────────────────────────────────────
+SIM_NUM_SESSIONS = 2_000
+SIM_SESSIONS_ANONIMAS = 800       # nunca tienen usuario, siempre Vitrinero
+SIM_SESSIONS_CON_USUARIO = 1_200  # repartidas sobre el pool de usuarios, ponderado por segmento
+
+SESSION_PROFILE_WEIGHTS: dict[str, float] = {
+    "vitrinero":           0.85,  # nunca llega a add_to_cart
+    "carrito_abandonado":  0.12,  # llega a add_to_cart, no llega a add_payment_info
+    "intenta_pagar":       0.03,  # llega a add_payment_info; resultado decidido por TRANSACTION_STATUS_RATES
+}
+
+# Probabilidad de que una sesión con add_to_cart tenga también
+# increment_quantity, decrement_quantity o remove_from_cart
+SESSION_CART_VARIATION_RATE = 0.05
+
+# Ventana de tiempo entre eventos consecutivos de una misma sesión
+SESSION_EVENT_GAP_SECONDS_MIN = 15
+SESSION_EVENT_GAP_SECONDS_MAX = 180  # 3 minutos
+
+# Cantidad de productos DISTINTOS por carrito (no cantidad/unidades).
+# Media ponderada ~3.5-4, consistente con benchmark real de ~4.41
+# productos por orden (Statista 2024).
+CART_SIZE_WEIGHTS = {
+    1: 0.22, 2: 0.20, 3: 0.18, 4: 0.14, 5: 0.10,
+    6: 0.07, 7: 0.04, 8: 0.03, 9: 0.01, 10: 0.01,
+}
+
+# ─────────────────────────────────────────────
+# FRAUD — reglas explicativas simuladas para órdenes ya marcadas como
+# REJECTED por TRANSACTION_STATUS_RATES (fraud.py NO decide el resultado,
+# solo explica qué reglas de un motor antifraude real habrían disparado).
+# Basado en indicadores estándar de industria: velocity checks,
+# geolocation analysis, purchase pattern monitoring, CVV mismatch.
+# ─────────────────────────────────────────────
+FRAUD_REGLA_PESOS: dict[str, int] = {
+    "velocidad_alta": 30,
+    "monto_atipico": 25,
+    "dispositivo_inusual": 20,
+    "ciudad_no_coincide": 15,
+    "cvv_mismatch": 35,
+}
+
+FRAUD_REGLA_PROBABILIDAD: dict[str, float] = {
+    "velocidad_alta": 0.35,
+    "monto_atipico": 0.40,
+    "dispositivo_inusual": 0.30,
+    "ciudad_no_coincide": 0.25,
+    "cvv_mismatch": 0.45,
+}
+
+FRAUD_SCORE_THRESHOLD_ALTO = 60
+FRAUD_SCORE_THRESHOLD_MEDIO = 30
 
 # ─────────────────────────────────────────────
 # STORAGE BACKEND — cambiar aquí para alternar local ↔ GCS

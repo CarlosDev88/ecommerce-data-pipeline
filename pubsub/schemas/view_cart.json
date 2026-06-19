@@ -1,0 +1,11 @@
+{
+  "event_name": "view_cart",
+  "description": "Usuario abre el carrito para revisar productos antes de pagar.",
+  "fields": {
+    "id_sesion": {"type": "string"},
+    "id_usuario": {"type": "string", "nullable": true},
+    "timestamp": {"type": "string", "format": "iso8601"},
+    "productos_en_carrito": {"type": "array", "items": {"type": "string"}, "description": "Lista de id_producto"},
+    "monto_acumulado": {"type": "number"}
+  }
+}

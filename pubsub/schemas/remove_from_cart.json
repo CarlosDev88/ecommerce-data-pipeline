@@ -1,0 +1,11 @@
+{
+  "event_name": "remove_from_cart",
+  "description": "Usuario elimina un producto del carrito. id_producto debe ser uno ya agregado en la misma sesión. Ocurre en ~5% de los carritos.",
+  "fields": {
+    "id_sesion": {"type": "string"},
+    "id_usuario": {"type": "string", "nullable": true},
+    "timestamp": {"type": "string", "format": "iso8601"},
+    "id_producto": {"type": "string"},
+    "valor_carrito_actualizado": {"type": "number"}
+  }
+}

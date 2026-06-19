@@ -1,0 +1,11 @@
+{
+  "event_name": "view_item_list",
+  "description": "Usuario entra a una categoría o ve resultados de búsqueda.",
+  "fields": {
+    "id_sesion": {"type": "string"},
+    "id_usuario": {"type": "string", "nullable": true},
+    "timestamp": {"type": "string", "format": "iso8601"},
+    "categoria_lista": {"type": "string", "description": "category_path real, ej: '/Hogar/Muebles De Sala Y Estar/'"},
+    "lista_productos_vistos": {"type": "array", "items": {"type": "string"}, "description": "5-10 product_id reales de products.parquet"}
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "event_name": "purchase",
+  "description": "Resultado del intento de pago. Se dispara siempre que la sesión llega a add_payment_info, con estado_pago variable según el resultado real de la transacción (mantiene trazabilidad con transactions.parquet vía id_orden/id_transaccion).",
+  "fields": {
+    "id_sesion": {"type": "string"},
+    "id_usuario": {"type": "string", "nullable": false},
+    "timestamp": {"type": "string", "format": "iso8601"},
+    "id_orden": {"type": "string", "description": "UUID, llave de unión con transactions.parquet"},
+    "id_transaccion": {"type": "string", "description": "UUID, llave de unión con transactions.parquet"},
+    "monto_total": {"type": "number"},
+    "impuestos": {"type": "number"},
+    "estado_pago": {"type": "string", "description": "APPROVED | REJECTED | PENDING | ERROR"}
+  }
+}

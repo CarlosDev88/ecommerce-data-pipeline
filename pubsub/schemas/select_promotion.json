@@ -1,0 +1,11 @@
+{
+  "event_name": "select_promotion",
+  "description": "Usuario hace clic en un banner de descuento.",
+  "fields": {
+    "id_sesion": {"type": "string"},
+    "id_usuario": {"type": "string", "nullable": true},
+    "timestamp": {"type": "string", "format": "iso8601"},
+    "promotion_id": {"type": "string"},
+    "promotion_name": {"type": "string", "description": "ej: CyberMonday 20% off"}
+  }
+}

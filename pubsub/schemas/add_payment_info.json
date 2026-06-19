@@ -1,0 +1,10 @@
+{
+  "event_name": "add_payment_info",
+  "description": "Usuario elige método de pago. Antesala de la transacción.",
+  "fields": {
+    "id_sesion": {"type": "string"},
+    "id_usuario": {"type": "string", "nullable": false},
+    "timestamp": {"type": "string", "format": "iso8601"},
+    "metodo_pago": {"type": "string", "description": "Tarjeta_Credito, PSE, Efectivo"}
+  }
+}

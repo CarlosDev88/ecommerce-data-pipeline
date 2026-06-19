@@ -1,0 +1,12 @@
+{
+  "event_name": "add_shipping_info",
+  "description": "Usuario selecciona el método de entrega.",
+  "fields": {
+    "id_sesion": {"type": "string"},
+    "id_usuario": {"type": "string", "nullable": false},
+    "timestamp": {"type": "string", "format": "iso8601"},
+    "metodo_envio": {"type": "string", "description": "Envio_Express, Envio_Normal"},
+    "ciudad_destino": {"type": "string"},
+    "tiempo_entrega_estimado": {"type": "string", "description": "ej: '2-3 dias'"}
+  }
+}

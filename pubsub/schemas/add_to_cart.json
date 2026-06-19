@@ -1,0 +1,13 @@
+{
+  "event_name": "add_to_cart",
+  "description": "Usuario añade un producto al carrito. Gate de login: id_usuario debe poblarse a partir de este evento (salvo segmentos VIP/frecuente que ya entraron logueados).",
+  "fields": {
+    "id_sesion": {"type": "string"},
+    "id_usuario": {"type": "string", "nullable": true, "description": "Se puebla aquí si la sesión no estaba ya logueada"},
+    "timestamp": {"type": "string", "format": "iso8601"},
+    "id_producto": {"type": "string"},
+    "cantidad": {"type": "integer", "minimum": 1, "maximum": 3},
+    "precio_unitario": {"type": "number"},
+    "valor_carrito_actualizado": {"type": "number", "description": "Suma acumulada del carrito en la sesión"}
+  }
+}

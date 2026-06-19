@@ -1,0 +1,12 @@
+{
+  "event_name": "begin_checkout",
+  "description": "Usuario hace clic en 'Ir a pagar'. id_usuario obligatorio (ya logueado desde add_to_cart).",
+  "fields": {
+    "id_sesion": {"type": "string"},
+    "id_usuario": {"type": "string", "nullable": false},
+    "timestamp": {"type": "string", "format": "iso8601"},
+    "monto_subtotal": {"type": "number"},
+    "costo_envio_calculado": {"type": "number"},
+    "cupon_aplicado": {"type": "string", "nullable": true, "description": "ej: DESCUENTO10, o null"}
+  }
+}
